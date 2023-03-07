@@ -1,6 +1,42 @@
 
 import subprocess
 from os import system
+import json
+from hashlib import sha256
+import getpass
+
+def login(username,password):
+
+    userdata = json.load(open("users.json",'r'))
+    return userdata[username] == sha256((username+password+"SrSrSr").encode()).hexdigest()
+
+def makeuser(username,password):
+    passwd = sha256((username+password+"SrSrSr").encode()).hexdigest()
+    userdata = json.load(open("users.json",'r'))
+    if username in userdata:
+        print(f"Account {username} already exists")
+    else:
+        userdata[username] = passwd
+    json.dump(userdata,open("users.json",'w'))
+def deluser(username,password):
+    passwd = sha256((username+password+"SrSrSr").encode()).hexdigest()
+    userdata = json.load(open("users.json",'r'))
+    
+    if username not in userdata:
+        print(f"Account {username} not found")
+    else:
+        if (userdata[username] == passwd):
+            del userdata[username]
+            json.dump(userdata,open("users.json",'w'))
+
+            exit()
+        else: print("incrrect credentials")
+    
+def listusers():
+    userdata = json.load(open("users.json",'r'))
+    print("USERS:")
+    for username in userdata:
+        print(username)
 def geimages():
     img  = subprocess.check_output(["docker","images"])
 
@@ -81,6 +117,23 @@ def createcont(name,image,inport=0,outport=0):
     return conteiners
 
 
+
+def loginpage():
+    system("clear")
+    print ("""
+   ___________ _   _________ 
+  / __/ __/ _ \ | / / __/ _ \\
+ _\ \/ _// , _/ |/ / _// , _/
+/___/___/_/|_||___/___/_/|_|
+
+    by SeekerRook
+
+    """
+    )
+    Username = input("Username : ")
+    Password = getpass.getpass("Password : ")
+    return login(Username,Password)
+
 def main():
 
     while (True):
@@ -99,6 +152,7 @@ def main():
 Options :
     1) Images
     2) Containers
+    3) Users
     0) Quit
 
 >> """
@@ -181,6 +235,31 @@ Container Options :
         #     print ("Not Implemented yet")
         # elif choice == '5':
         #     print ("Not Implemented yet")
+        elif choice == '3':
+           while(True):
+                choice = input ("""
+Container Options :
+
+    1) list users
+    2) new user
+    3) delete user
+    0) Back
+
+>> """)
+                if choice == '1':
+                    listusers()
+
+                
+                elif choice == '2':
+                    username = input("username : ")
+                    passwd = getpass.getpass("password : ",)
+                    makeuser(username,passwd)
+                elif choice == '3':
+                    username = input("username : ")
+                    passwd = getpass.getpass("password : ",)
+                    deluser(username,passwd)
+                elif choice == '0':
+                    break
         elif choice == '0':
             print ("""
 
@@ -193,4 +272,8 @@ Container Options :
             print("What???")
 
 if __name__ == "__main__":
-    main()
+    if (loginpage() ):
+        main()
+    else:
+        print("Incorrect Credentials")
+        exit()
