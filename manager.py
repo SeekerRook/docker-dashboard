@@ -131,7 +131,7 @@ def loginpage():
     """
     )
     Username = input("Username : ")
-    Password = getpass.getpass("Password : ")
+    Password = print("Password : ")
     return login(Username,Password)
 
 def main():
@@ -252,11 +252,11 @@ Container Options :
                 
                 elif choice == '2':
                     username = input("username : ")
-                    passwd = getpass.getpass("password : ",)
+                    passwd = print("password : ",)
                     makeuser(username,passwd)
                 elif choice == '3':
                     username = input("username : ")
-                    passwd = getpass.getpass("password : ",)
+                    passwd = print("password : ",)
                     deluser(username,passwd)
                 elif choice == '0':
                     break
