@@ -5,38 +5,7 @@ import json
 from hashlib import sha256
 import getpass
 
-def login(username,password):
 
-    userdata = json.load(open("users.json",'r'))
-    return userdata[username] == sha256((username+password+"SrSrSr").encode()).hexdigest()
-
-def makeuser(username,password):
-    passwd = sha256((username+password+"SrSrSr").encode()).hexdigest()
-    userdata = json.load(open("users.json",'r'))
-    if username in userdata:
-        print(f"Account {username} already exists")
-    else:
-        userdata[username] = passwd
-    json.dump(userdata,open("users.json",'w'))
-def deluser(username,password):
-    passwd = sha256((username+password+"SrSrSr").encode()).hexdigest()
-    userdata = json.load(open("users.json",'r'))
-    
-    if username not in userdata:
-        print(f"Account {username} not found")
-    else:
-        if (userdata[username] == passwd):
-            del userdata[username]
-            json.dump(userdata,open("users.json",'w'))
-
-            exit()
-        else: print("incrrect credentials")
-    
-def listusers():
-    userdata = json.load(open("users.json",'r'))
-    print("USERS:")
-    for username in userdata:
-        print(username)
 def geimages():
     img  = subprocess.check_output(["docker","images"])
 
@@ -44,53 +13,56 @@ def geimages():
 
     return images
 def gecontainers():
-    cont  = subprocess.check_output(["docker","ps","-a"])
+    res  = subprocess.check_output(["docker","ps","-a"])
 
-    conteiners = (cont.decode("utf-8"))
+    result = (res.decode("utf-8"))
 
 
-    return conteiners
+    return result
 def getactivecontainers():
-    cont  = subprocess.check_output(["docker","ps"])
+    res  = subprocess.check_output(["docker","ps"])
 
-    conteiners = (cont.decode("utf-8"))
+    result = (res.decode("utf-8"))
 
  
-    return conteiners
+    return result
 
 def startc(name):
-    cont  = subprocess.check_output(["docker","start",name])
+    res  = subprocess.check_output(["docker","start",name])
 
-    conteiners = (cont.decode("utf-8"))
+    result = (res.decode("utf-8"))
 
-    return conteiners
+    return result
 def stopc(name):
-    cont  = subprocess.check_output(["docker","stop",name])
+    res  = subprocess.check_output(["docker","stop",name])
 
-    conteiners = (cont.decode("utf-8"))
+    result = (res.decode("utf-8"))
 
-    return conteiners
+    return result
 def delc(name):
     try:
-        cont  = subprocess.check_output(["docker","rm",name])
+        res  = subprocess.check_output(["docker","rm",name])
     except:
-        cont  = subprocess.check_output(["docker","stop",name])
-        cont  = subprocess.check_output(["docker","rm",name])
+        res  = subprocess.check_output(["docker","stop",name])
+        res  = subprocess.check_output(["docker","rm",name])
     
-    conteiners = (cont.decode("utf-8"))
+    result = (res.decode("utf-8"))
 
-    return conteiners
-def attach(name):
-    cont  = subprocess.check_output(["docker","attach",name])
+    return result
 
-    conteiners = (cont.decode("utf-8"))
+def run(container,command,arg):
+    res  = subprocess.check_output(["docker","exec","-i",container,command,arg])
 
-    return conteiners
+    result = (res.decode("utf-8"))
+    
+    return result
+
+
 
 def clean():
-    cont  = subprocess.check_output(["docker","image","prune","-f"])
-    conteiners = (cont.decode("utf-8"))
-    return conteiners
+    res  = subprocess.check_output(["docker","image","prune","-f"])
+    result = (res.decode("utf-8"))
+    return result
 def makefile(rp,u,up):
     s = f"""
 
@@ -102,37 +74,23 @@ echo -e "{up}\\n{up}\\n{up}" | passwd {u}
     open("init.sh",'w').write(s)
 def createcont(name,image,inport=0,outport=0):
     if(inport==0 and outport ==0):
-        cont  = subprocess.check_output(["docker","run","-d","--name" , name, image])
+        res  = subprocess.check_output(["docker","run","-d","--name" , name, image])
         
-    else:cont  = subprocess.check_output(["docker","run","-d","-p",f"{inport}:{outport}","--name" , name, image])
+    else:res  = subprocess.check_output(["docker","run","-d","-p",f"{inport}:{outport}","--name" , name, image])
 
-    if (image == 'python-ssh'):
+    if (image == 'python-ssh' or 1==1):
         rp = input("Root Password : ")
         u = input("Default User Name : ")
         up = input("Default User Password : ")
         makefile(rp,u,up)
-        system( f"docker exec -i -u root {name} /bin/bash < init.sh" )
+        subprocess.run( f"docker exec -i -u root {name} /bin/bash < init.sh " ,shell=True,stdout=subprocess.DEVNULL,stderr= subprocess.DEVNULL)
+
     
-    conteiners = (cont.decode("utf-8"))
-    return conteiners
+    result = (res.decode("utf-8"))
+    return result
 
 
 
-def loginpage():
-    system("clear")
-    print ("""
-   ___________ _   _________ 
-  / __/ __/ _ \ | / / __/ _ \\
- _\ \/ _// , _/ |/ / _// , _/
-/___/___/_/|_||___/___/_/|_|
-
-    by SeekerRook
-
-    """
-    )
-    Username = input("Username : ")
-    Password = input("Password : ")
-    return login(Username,Password)
 
 def main():
 
@@ -152,7 +110,6 @@ def main():
 Options :
     1) Images
     2) Containers
-    3) Users
     0) Quit
 
 >> """
@@ -186,9 +143,12 @@ Container Options :
 
     3) start container
     4) stop container
-
+    
     5) New container
     6) Delete container
+
+    7) Run Command inside Container
+
     0) Back
 
 >> """)
@@ -206,7 +166,6 @@ Container Options :
 
                     print(stopc(n))
                 elif choice == '5':
-                    # try:
                         n = input("Container name : ")
                         i = input("Container Image (if not sure python-ssh) : ")
                         op = input("Container in-port (if not sure 22): ")
@@ -214,52 +173,46 @@ Container Options :
                         
                         print(createcont(name=n,image=i,inport=int(ip),outport=int(op)))
                         print(gecontainers())
-
-                    # except  :
-                    #     print("INVALID NAME OR PORT!!!!")
-                    #     print("Check Here:")
-                    #     print(gecontainers())
                 elif choice == '6':
                     n = input("Container name : ")
 
                     print(delc(n))
 
-                    # print ("Not Implemented yet")
+                elif choice == '7':
+                    choice = input ("""
+Choose Command :
+
+    1) show directory content
+    2) read file
+    3) create file
+
+>> """)
+
+                    if choice == '1':
+
+                        n = input("Container name : ")
+                        d = input("Directory : ")
+
+                        print(run(n,"ls",d))
+                    elif choice == '2':
+
+                        n = input("Container name : ")
+                        d = input("File Path : ")
+
+                        print(run(n,"cat",d))
+                    elif choice == '3':
+
+                        n = input("Container name : ")
+                        d = input("File Path : ")
+
+                        print(run(n,"touch",d))
 
                 elif choice == '0':
                 
                     break
                 else:
                      print("What???")
-        # elif choice == '3':
-        #     print ("Not Implemented yet")
-        # elif choice == '5':
-        #     print ("Not Implemented yet")
-        elif choice == '3':
-           while(True):
-                choice = input ("""
-Container Options :
 
-    1) list users
-    2) new user
-    3) delete user
-    0) Back
-
->> """)
-                if choice == '1':
-                    listusers()
-
-                
-                elif choice == '2':
-                    username = input("username : ")
-                    passwd = input("password : ",)
-                    makeuser(username,passwd)
-                elif choice == '3':
-                    username = input("username : ")
-                    passwd = input("password : ",)
-                    deluser(username,passwd)
-                elif choice == '0':
-                    break
         elif choice == '0':
             print ("""
 
@@ -272,8 +225,5 @@ Container Options :
             print("What???")
 
 if __name__ == "__main__":
-    if (loginpage() ):
+
         main()
-    else:
-        print("Incorrect Credentials")
-        exit()
