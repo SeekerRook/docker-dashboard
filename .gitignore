@@ -1,3 +1,4 @@
 init.sh
 __pycache__/*
 flag.txt
+*.ova
