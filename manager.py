@@ -1,10 +1,10 @@
+#!/usr/bin/python3
 
 import subprocess
 from os import system
 import json
 from hashlib import sha256
 import getpass
-
 
 def geimages():
     img  = subprocess.check_output(["docker","images"])
@@ -72,13 +72,19 @@ echo -e "{up}\\n{up}\\n{up}" | passwd {u}
 
     """
     open("init.sh",'w').write(s)
-def createcont(name,image,inport=0,outport=0):
-    if(inport==0 and outport ==0):
-        res  = subprocess.check_output(["docker","run","-d","--name" , name, image])
+def createcont(name,image,args=''):
+    args = list(args.split(' '))
+    for a in args:
+        if args != ['']:
+            if a[:2] != "--" :  
+                print(f"\n\nINVALID ARGUMENTS {args} \n arguments will be ignored \n")
+                args.remove(a)
         
-    else:res  = subprocess.check_output(["docker","run","-d","-p",f"{inport}:{outport}","--name" , name, image])
 
-    if (image == 'python-ssh' or 1==1):
+    res  = subprocess.check_output(["docker","run","-d","--name" , name]+args+[image])
+        
+
+    if (image == 'python-ssh'):
         rp = input("Root Password : ")
         u = input("Default User Name : ")
         up = input("Default User Password : ")
@@ -167,11 +173,10 @@ Container Options :
                     print(stopc(n))
                 elif choice == '5':
                         n = input("Container name : ")
-                        i = input("Container Image (if not sure python-ssh) : ")
-                        op = input("Container in-port (if not sure 22): ")
-                        ip = input("Container out-port (something original): ")
-                        
-                        print(createcont(name=n,image=i,inport=int(ip),outport=int(op)))
+                        i = input("Container Image : ")
+                        arc = input("Set Add Arguments : ")
+                            
+                        print(createcont(name=n,image=i,args=arc))
                         print(gecontainers())
                 elif choice == '6':
                     n = input("Container name : ")
